@@ -10,7 +10,7 @@ fn main() {
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
     // create a triangle
-    ico_sphere("ico",0, &mut engine.renderer, &mut engine.objects,
+    ico_sphere("ico",1, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
        shader_settings: ShaderSettings {
            polygon_mode: wgpu::PolygonMode::Line,
@@ -52,12 +52,33 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
             }
         ]);
     }
-    let indices =vec![
+    let mut indices =vec![
         0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
         1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
         3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
         4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
     ];
+
+    for i in 0..subs{
+        let mut new_vertices = vec![];
+        let mut new_indices = vec![];
+        for j in (0..vertices.len()).step_by(3){
+            let tri_v1 = vertices[j];
+            let tri_v2 = vertices[j+1];
+            let tri_v3 = vertices[j+2];
+
+            let mid_v1 = get_middle_point(tri_v1, tri_v2);
+            let mid_v2 = get_middle_point(tri_v2, tri_v3);
+            let mid_v3 = get_middle_point(tri_v3, tri_v1);
+
+            add_tri(tri_v1, mid_v1, mid_v3, &mut new_vertices, &mut new_indices);
+            add_tri(tri_v2, mid_v2, mid_v1, &mut new_vertices, &mut new_indices);
+            add_tri(tri_v3, mid_v3, mid_v2, &mut new_vertices, &mut new_indices);
+            add_tri(mid_v1, mid_v2, mid_v3, &mut new_vertices, &mut new_indices);
+        }
+        vertices = new_vertices.clone();
+        indices = new_indices.clone();
+    }
 
     objects.new_object(
         name.clone(),
@@ -66,4 +87,33 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
         settings,
         renderer,
     ).unwrap();
+}
+
+fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices: &mut Vec<u16>){
+    vertices.append(&mut vec![v1]);
+    vertices.append(&mut vec![v2]);
+    vertices.append(&mut vec![v3]);
+
+    indices.append(&mut vec![(vertices.len() - 2) as u16]);
+    indices.append(&mut vec![(vertices.len() - 1) as u16]);
+    indices.append(&mut vec![vertices.len() as u16]);
+}
+
+fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
+    Vertex{
+        position: [
+            (v1.position[0]+v2.position[0])/2.,
+            (v1.position[1]+v2.position[1])/2.,
+            (v1.position[2]+v2.position[2])/2.,
+        ],
+        uv: [
+            (v1.uv[0]+v2.uv[0])/2.,
+            (v1.uv[1]+v2.uv[1])/2.,
+        ],
+        normal: [
+            (v1.normal[0]+v2.normal[0])/2.,
+            (v1.normal[1]+v2.normal[1])/2.,
+            (v1.normal[2]+v2.normal[2])/2.,
+        ],
+    }
 }
