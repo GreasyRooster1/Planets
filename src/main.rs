@@ -44,9 +44,10 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
     ];
 
     for raw_vert in raw_vertices {
+        let pos = normalize_position(Position::xyz(raw_vert[0],raw_vert[1],raw_vert[2]));
         vertices.append(&mut vec![
             Vertex {
-                position: raw_vert,
+                position: [pos.x,pos.y,pos.z],
                 uv: [0., 0.],
                 normal: [0., 1., 0.],
             }
@@ -106,9 +107,7 @@ fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
 
     let pos_avg:Position = Position::xyz((pos_v1.x+pos_v2.x)/2.,(pos_v1.y+pos_v2.y)/2.,(pos_v1.z+pos_v2.z)/2.);
 
-    let len = f32::sqrt(pos_avg.x.powi(2)+pos_avg.y.powi(2)+pos_avg.z.powi(2));
-
-    let pos_normal = Position::xyz(pos_avg.x/len,pos_avg.y/len,pos_avg.z/len);
+    let pos_normal = normalize_position(pos_avg);
 
     Vertex{
         position: [
@@ -126,4 +125,10 @@ fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
             (v1.normal[2]+v2.normal[2])/2.,
         ],
     }
+}
+
+fn normalize_position(position: Position)->Position{
+    let len = f32::sqrt(position.x.powi(2)+position.y.powi(2)+position.z.powi(2));
+
+    Position::xyz(position.x/len,position.y/len,position.z/len)
 }
