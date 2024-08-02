@@ -1,9 +1,11 @@
 mod lib;
+mod input;
 
 use blue_engine::{header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
 use blue_engine::glm::sqrt;
 use blue_engine::primitive_shapes::uv_sphere;
 use lib::Position;
+use crate::input::is_key_pressed;
 
 fn main() {
     // initialize the engine
@@ -19,22 +21,31 @@ fn main() {
        ..Default::default()
    });
 
-    let radius = 2f32;
+    engine.camera
+        .set_target(0.,0.,0.)
+        .expect("Couldn't update the camera eye");
+
+    let mut radius = 2f32;
     let start = std::time::SystemTime::now();
 
     // run the engine
-    engine
-        .update_loop(move |_, _, _, _, camera, _| {
-            let camx = start.elapsed().unwrap().as_secs_f32().sin() * radius;
-            let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
-            camera
-                .set_position(camx, 0.0, camz)
-                .expect("Couldn't update the camera eye");
-            camera
-                .set_target(0.,0.,0.)
-                .expect("Couldn't update the camera eye");
-        })
-        .expect("Error during update loop");
+    engine.update_loop(move |_, _, _, _, camera, _|
+    {
+        let camx = start.elapsed().unwrap().as_secs_f32().sin() * radius;
+        let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
+
+        if is_key_pressed(38){
+            radius-=0.1;
+        }
+        if is_key_pressed(40){
+            radius+=0.1;
+        }
+        camera
+            .set_position(camx, 0.0, camz)
+            .expect("Couldn't update the camera eye");
+
+    })
+    .expect("Error during update loop");
 }
 
 fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings){
