@@ -10,7 +10,14 @@ fn main() {
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
     // create a triangle
-    ico_sphere("ico",0, &mut engine.renderer, &mut engine.objects);
+    ico_sphere("ico",0, &mut engine.renderer, &mut engine.objects,
+    ObjectSettings{
+       shader_settings: ShaderSettings {
+           polygon_mode: wgpu::PolygonMode::Line,
+           ..Default::default()
+       },
+       ..Default::default()
+   });
 
     let radius = 6f32;
     let start = std::time::SystemTime::now();
@@ -27,7 +34,7 @@ fn main() {
         .expect("Error during update loop");
 }
 
-fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage){
+fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings){
     let t = (1.0 + f32::sqrt(5.0))/2.;
     let mut vertices: Vec<Vertex> = vec![];
     let raw_vertices:Vec<[f32;3]>=vec![
@@ -56,13 +63,7 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
         name.clone(),
         vertices,
         indices,
-        ObjectSettings{
-            shader_settings: ShaderSettings {
-                polygon_mode: wgpu::PolygonMode::Line,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
+        settings,
         renderer,
     ).unwrap();
 }
