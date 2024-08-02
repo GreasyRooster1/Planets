@@ -1,7 +1,7 @@
 mod lib;
 mod input;
 
-use blue_engine::{header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
+use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
 
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
@@ -33,13 +33,13 @@ fn main() {
         .set_target(0.,0.,0.)
         .expect("Couldn't update the camera eye");
 
-    let mut color = [1f32, 1f32, 1f32, 1f32];
+    let mut wireframe = false;
 
     let mut radius = 2f32;
     let mut angle = 0f32;
 
     // run the engine
-    engine.update_loop(move |_, window, objects, _, camera, signals|
+    engine.update_loop(move |renderer, window, objects, input, camera, signals|
     {
 
         let egui_plugin = signals
@@ -50,36 +50,36 @@ fn main() {
             |ctx| {
                 gui::Window::new("title").show(ctx, |ui| {
                     ui.horizontal(|ui| {
-                        ui.label("Pick a color");
-                        ui.color_edit_button_rgba_unmultiplied(&mut color);
+                        ui.checkbox(&mut wireframe,"Wireframe");
                     });
                 });
 
-                objects
-                    .get_mut("ico")
-                    .unwrap()
-                    .set_color(color[0], color[1], color[2], color[3])
-                    .unwrap();
+                let ico = objects.get_mut("ico").unwrap();
+
+                ico.shader_settings = ShaderSettings{
+                    polygon_mode: if wireframe {wgpu::PolygonMode::Line}else{wgpu::PolygonMode::Fill},
+                    ..Default::default()
+                };
+                ico.update_shader(renderer).unwrap()
             },
             window,
         );
 
-        let camx = angle.sin() * radius;
-        let camz = angle.cos() * radius;
-
-        if is_key_pressed(38)&&radius>1.1{
-            radius-=0.001;
+        if is_key_pressed(38)&&radius> 1.1 {
+            radius -= 0.001;
         }
         if is_key_pressed(40){
-            radius+=0.001;
+            radius += 0.001;
         }
 
         if is_key_pressed(39){
-            angle+=0.001;
+            angle += 0.001;
         }
         if is_key_pressed(37){
-            angle-=0.001;
+            angle -= 0.001;
         }
+        let camx = angle.sin() * radius;
+        let camz = angle.cos() * radius;
         camera
             .set_position(camx, 0.0, camz)
             .expect("Couldn't update the camera eye");
