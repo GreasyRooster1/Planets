@@ -10,7 +10,7 @@ fn main() {
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
     // create a triangle
-    ico_sphere("ico",1, &mut engine.renderer, &mut engine.objects,
+    ico_sphere("ico",3, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
        shader_settings: ShaderSettings {
            polygon_mode: wgpu::PolygonMode::Line,
