@@ -101,11 +101,20 @@ fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices:
 }
 
 fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
+    let pos_v1:Position = Position::xyz(v1.position[0],v1.position[1],v1.position[2]);
+    let pos_v2:Position = Position::xyz(v2.position[0],v2.position[1],v2.position[2]);
+
+    let pos_avg:Position = Position::xyz((pos_v1.x+pos_v2.x)/2.,(pos_v1.y+pos_v2.y)/2.,(pos_v1.z+pos_v2.z)/2.);
+
+    let len = f32::sqrt(pos_avg.x.powi(2)+pos_avg.y.powi(2)+pos_avg.z.powi(2));
+
+    let pos_normal = Position::xyz(pos_avg.x/len,pos_avg.y/len,pos_avg.z/len);
+
     Vertex{
         position: [
-            (v1.position[0]+v2.position[0])/2.,
-            (v1.position[1]+v2.position[1])/2.,
-            (v1.position[2]+v2.position[2])/2.,
+            pos_normal.x,
+            pos_normal.y,
+            pos_normal.z,
         ],
         uv: [
             (v1.uv[0]+v2.uv[0])/2.,
