@@ -2,8 +2,10 @@ mod lib;
 mod input;
 
 use blue_engine::{header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
-use blue_engine::glm::sqrt;
-use blue_engine::primitive_shapes::uv_sphere;
+
+use blue_engine_utilities::egui;
+use blue_engine_utilities::egui::egui as gui;
+
 use lib::Position;
 use crate::input::is_key_pressed;
 
@@ -21,16 +23,47 @@ fn main() {
        ..Default::default()
    });
 
+    // Start the egui context
+    let gui_context = egui::EGUI::new(&mut engine.renderer, &engine.window);
+
+    // We add the gui as plugin, which runs once before everything else to fetch events, and once during render times for rendering and other stuff
+    engine.signals.add_signal("egui", Box::new(gui_context));
+
     engine.camera
         .set_target(0.,0.,0.)
         .expect("Couldn't update the camera eye");
+
+    let mut color = [1f32, 1f32, 1f32, 1f32];
 
     let mut radius = 2f32;
     let mut angle = 0f32;
 
     // run the engine
-    engine.update_loop(move |_, _, _, _, camera, _|
+    engine.update_loop(move |_, window, objects, _, camera, signals|
     {
+
+        let egui_plugin = signals
+            .get_signal::<egui::EGUI>("egui")
+            .expect("Plugin not found")
+            .expect("Plugin type mismatch");
+        egui_plugin.ui(
+            |ctx| {
+                gui::Window::new("title").show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label("Pick a color");
+                        ui.color_edit_button_rgba_unmultiplied(&mut color);
+                    });
+                });
+
+                objects
+                    .get_mut("ico")
+                    .unwrap()
+                    .set_color(color[0], color[1], color[2], color[3])
+                    .unwrap();
+            },
+            window,
+        );
+
         let camx = angle.sin() * radius;
         let camz = angle.cos() * radius;
 
