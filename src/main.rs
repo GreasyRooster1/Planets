@@ -26,19 +26,26 @@ fn main() {
         .expect("Couldn't update the camera eye");
 
     let mut radius = 2f32;
-    let start = std::time::SystemTime::now();
+    let mut angle = 0f32;
 
     // run the engine
     engine.update_loop(move |_, _, _, _, camera, _|
     {
-        let camx = start.elapsed().unwrap().as_secs_f32().sin() * radius;
-        let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
+        let camx = angle.sin() * radius;
+        let camz = angle.cos() * radius;
 
         if is_key_pressed(38)&&radius>1.1{
-            radius-=0.01;
+            radius-=0.001;
         }
         if is_key_pressed(40){
-            radius+=0.01;
+            radius+=0.001;
+        }
+
+        if is_key_pressed(39){
+            angle+=0.001;
+        }
+        if is_key_pressed(37){
+            angle-=0.001;
         }
         camera
             .set_position(camx, 0.0, camz)

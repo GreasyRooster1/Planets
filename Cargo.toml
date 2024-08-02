@@ -6,5 +6,6 @@ edition = "2021"
 [dependencies]
 ascending_input = "0.3.1"
 blue_engine = "0.5.15"
+blue_engine_utilities = "0.5.15"
 user32-sys = "0.2.0"
 winapi = "0.3.9"
