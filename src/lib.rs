@@ -6,7 +6,7 @@ pub struct Position{
 }
 
 impl Position{
-    fn xyz(x:f32,y:f32,z:f32)->Position{
+    pub(crate) fn xyz(x:f32, y:f32, z:f32) ->Position{
         Position{
             x,
             y,
