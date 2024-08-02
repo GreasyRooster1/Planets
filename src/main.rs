@@ -52,7 +52,7 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
             }
         ]);
     }
-    let mut indices =vec![
+    let mut indices:Vec<u16> =vec![
         0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
         1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
         3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
@@ -62,10 +62,10 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
     for i in 0..subs{
         let mut new_vertices = vec![];
         let mut new_indices = vec![];
-        for j in (0..vertices.len()).step_by(3){
-            let tri_v1 = vertices[j];
-            let tri_v2 = vertices[j+1];
-            let tri_v3 = vertices[j+2];
+        for j in (0..indices.len()).step_by(3){
+            let tri_v1 = vertices[indices[j]as usize];
+            let tri_v2 = vertices[indices[j+1]as usize];
+            let tri_v3 = vertices[indices[j+2]as usize];
 
             let mid_v1 = get_middle_point(tri_v1, tri_v2);
             let mid_v2 = get_middle_point(tri_v2, tri_v3);
