@@ -5,8 +5,9 @@ use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStora
 
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
-
+use blue_engine_utilities::egui::egui::Slider;
 use lib::Position;
+use Planets::MeshData;
 use crate::input::is_key_pressed;
 
 fn main() {
@@ -34,6 +35,7 @@ fn main() {
         .expect("Couldn't update the camera eye");
 
     let mut wireframe = false;
+    let mut subs = 0;
 
     let mut radius = 2f32;
     let mut angle = 0f32;
@@ -48,10 +50,9 @@ fn main() {
             .expect("Plugin type mismatch");
         egui_plugin.ui(
             |ctx| {
-                gui::Window::new("title").show(ctx, |ui| {
-                    ui.horizontal(|ui| {
-                        ui.checkbox(&mut wireframe,"Wireframe");
-                    });
+                gui::Window::new("Planets").show(ctx, |ui| {
+                    ui.checkbox(&mut wireframe,"Wireframe");
+                    ui.add(Slider::new(&mut subs, 0..=5).text("subs"))
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -89,6 +90,17 @@ fn main() {
 }
 
 fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings){
+    let mesh = get_ico_mesh(subs);
+    objects.new_object(
+        name.clone(),
+        mesh.vertices,
+        mesh.indices,
+        settings,
+        renderer,
+    ).unwrap();
+}
+
+fn get_ico_mesh(subs:i32)->MeshData{
     let t = (1.0 + f32::sqrt(5.0))/2.;
     let mut vertices: Vec<Vertex> = vec![];
     let raw_vertices:Vec<[f32;3]>=vec![
@@ -134,14 +146,10 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
         vertices = new_vertices.clone();
         indices = new_indices.clone();
     }
-
-    objects.new_object(
-        name.clone(),
+    MeshData{
         vertices,
         indices,
-        settings,
-        renderer,
-    ).unwrap();
+    }
 }
 
 fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices: &mut Vec<u16>){

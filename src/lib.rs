@@ -1,3 +1,4 @@
+use blue_engine::Vertex;
 
 pub struct Position{
     pub x:f32,
@@ -13,4 +14,9 @@ impl Position{
             z
         }
     }
+}
+
+pub struct MeshData{
+    pub vertices:Vec<Vertex>,
+    pub indices:Vec<u16>,
 }
