@@ -52,7 +52,7 @@ fn main() {
             |ctx| {
                 gui::Window::new("Planets").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
-                    ui.add(Slider::new(&mut subs, 0..=5).text("subs"))
+                    ui.add(Slider::new(&mut subs, 0..=4).text("subs"))
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -61,7 +61,11 @@ fn main() {
                     polygon_mode: if wireframe {wgpu::PolygonMode::Line}else{wgpu::PolygonMode::Fill},
                     ..Default::default()
                 };
-                ico.update_shader(renderer).unwrap()
+
+                let new_mesh = get_ico_mesh(subs);
+                ico.vertices = new_mesh.vertices;
+                ico.indices = new_mesh.indices;
+                ico.update(renderer).unwrap()
             },
             window,
         );
