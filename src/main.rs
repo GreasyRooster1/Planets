@@ -35,10 +35,10 @@ fn main() {
         let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
 
         if is_key_pressed(38){
-            radius-=0.1;
+            radius-=0.01;
         }
         if is_key_pressed(40){
-            radius+=0.1;
+            radius+=0.01;
         }
         camera
             .set_position(camx, 0.0, camz)
