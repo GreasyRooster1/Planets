@@ -10,7 +10,7 @@ fn main() {
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
     // create a triangle
-    ico_sphere("ico",3, &mut engine.renderer, &mut engine.objects,
+    ico_sphere("ico",1, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
        shader_settings: ShaderSettings {
            polygon_mode: wgpu::PolygonMode::Line,
@@ -19,7 +19,7 @@ fn main() {
        ..Default::default()
    });
 
-    let radius = 6f32;
+    let radius = 2f32;
     let start = std::time::SystemTime::now();
 
     // run the engine
@@ -29,6 +29,9 @@ fn main() {
             let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
             camera
                 .set_position(camx, 0.0, camz)
+                .expect("Couldn't update the camera eye");
+            camera
+                .set_target(0.,0.,0.)
                 .expect("Couldn't update the camera eye");
         })
         .expect("Error during update loop");
