@@ -93,10 +93,11 @@ fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices:
     vertices.append(&mut vec![v1]);
     vertices.append(&mut vec![v2]);
     vertices.append(&mut vec![v3]);
+    vertices.append(&mut vec![v1]);
 
+    indices.append(&mut vec![(vertices.len() - 3) as u16]);
     indices.append(&mut vec![(vertices.len() - 2) as u16]);
-    indices.append(&mut vec![(vertices.len() - 1) as u16]);
-    indices.append(&mut vec![vertices.len() as u16]);
+    indices.append(&mut vec![(vertices.len()-1) as u16]);
 }
 
 fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
