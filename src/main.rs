@@ -34,7 +34,7 @@ fn main() {
         let camx = start.elapsed().unwrap().as_secs_f32().sin() * radius;
         let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
 
-        if is_key_pressed(38){
+        if is_key_pressed(38)&&radius>1.1{
             radius-=0.01;
         }
         if is_key_pressed(40){
