@@ -12,9 +12,18 @@ fn main() {
     // create a triangle
     ico_sphere("ico",0, &mut engine.renderer, &mut engine.objects);
 
+    let radius = 6f32;
+    let start = std::time::SystemTime::now();
+
     // run the engine
     engine
-        .update_loop(move |_, _, _, _, _, _| {})
+        .update_loop(move |_, _, _, _, camera, _| {
+            let camx = start.elapsed().unwrap().as_secs_f32().sin() * radius;
+            let camz = start.elapsed().unwrap().as_secs_f32().cos() * radius;
+            camera
+                .set_position(camx, 0.0, camz)
+                .expect("Couldn't update the camera eye");
+        })
         .expect("Error during update loop");
 }
 
