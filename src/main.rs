@@ -180,7 +180,14 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
             (new_vertices.len() + 2) as u16,
         ],new_vertices.len());
 
-        new_vertices.append(&mut mesh_data.vertices);
+        for vertex in mesh_data.vertices{
+            new_vertices.push(Vertex{
+                position: vertex.position,
+                uv: [tri_subs as f32/16., 0.5],
+                normal:vertex.normal,
+            })
+        }
+
         new_indices.append(&mut mesh_data.indices);
     }
 
