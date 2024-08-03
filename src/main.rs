@@ -1,6 +1,7 @@
 mod lib;
 mod input;
 
+use std::time::SystemTime;
 use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
 
 use blue_engine_utilities::egui;
@@ -40,9 +41,16 @@ fn main() {
     let mut radius = 2f32;
     let mut angle = 0f32;
 
+    let timer = SystemTime::now();
+    let mut frame_timer = SystemTime::now();
+    let mut fps = 0;
+    let mut elapsed_frame_time = 0;
+
     // run the engine
     engine.update_loop(move |renderer, window, objects, input, camera, signals|
     {
+
+        frame_timer = SystemTime::now();
 
         let egui_plugin = signals
             .get_signal::<egui::EGUI>("egui")
@@ -53,6 +61,10 @@ fn main() {
                 gui::Window::new("Planets").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
                     ui.add(Slider::new(&mut subs, 0..=4).text("subs"))
+                });
+
+                gui::Window::new("Stats").show(ctx, |ui| {
+                    ui.label(format!("FPS: {0}",fps))
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -89,6 +101,8 @@ fn main() {
             .set_position(camx, 0.0, camz)
             .expect("Couldn't update the camera eye");
 
+        elapsed_frame_time = frame_timer.elapsed().unwrap().as_millis();
+        fps = (60_000/elapsed_frame_time)/1000
     })
     .expect("Error during update loop");
 }
