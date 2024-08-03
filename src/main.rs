@@ -15,6 +15,8 @@ fn main() {
     // initialize the engine
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
+    engine.camera.set_far(1000f32).unwrap();
+
     // create a triangle
     ico_sphere("ico",2, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
@@ -23,7 +25,8 @@ fn main() {
            ..Default::default()
        },
        ..Default::default()
-   });
+    });
+    engine.objects.get_mut("ico").unwrap().set_scale(100f32,100f32,100f32);
 
     // Start the egui context
     let gui_context = egui::EGUI::new(&mut engine.renderer, &engine.window);
@@ -39,13 +42,14 @@ fn main() {
     let mut normalization_factor = 0.;
     let mut subs = 0;
 
-    let mut radius = 2f32;
+    let mut radius = 300f32;
     let mut angle = 0f32;
 
     let timer = SystemTime::now();
     let mut frame_timer = SystemTime::now();
     let mut fps = 0;
     let mut elapsed_frame_time = 0;
+    let mut delta_time = 0.;
 
     // run the engine
     engine.update_loop(move |renderer, window, objects, input, camera, signals|
@@ -59,14 +63,15 @@ fn main() {
             .expect("Plugin type mismatch");
         egui_plugin.ui(
             |ctx| {
-                gui::Window::new("Planets").show(ctx, |ui| {
+                gui::Window::new("Mesh").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
                     ui.add(Slider::new(&mut subs, 0..=4).text("subs"));
                     ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("norm"));
                 });
 
                 gui::Window::new("Stats").show(ctx, |ui| {
-                    ui.label(format!("FPS: {0}",fps))
+                    ui.label(format!("FPS: {0}",fps));
+                    ui.label(format!("∆t: {0}",elapsed_frame_time));
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -85,17 +90,17 @@ fn main() {
         );
 
         if is_key_pressed(38)&&radius> 1.1 {
-            radius -= 0.001;
+            radius -= 1. * delta_time;
         }
         if is_key_pressed(40){
-            radius += 0.001;
+            radius += 1. * delta_time;
         }
 
         if is_key_pressed(39){
-            angle += 0.001;
+            angle += 0.01 * delta_time;
         }
         if is_key_pressed(37){
-            angle -= 0.001;
+            angle -= 0.01 * delta_time;
         }
         let camx = angle.sin() * radius;
         let camz = angle.cos() * radius;
@@ -104,7 +109,8 @@ fn main() {
             .expect("Couldn't update the camera eye");
 
         elapsed_frame_time = frame_timer.elapsed().unwrap().as_millis();
-        fps = (60_000/elapsed_frame_time)/1000
+        fps = (1_000/elapsed_frame_time);
+        delta_time = elapsed_frame_time as f32
     })
     .expect("Error during update loop");
 }
