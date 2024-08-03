@@ -57,6 +57,7 @@ fn main() {
     let mut fps = 0;
     let mut elapsed_frame_time = 0;
     let mut delta_time = 0.;
+    let min_frame_time = 10;
 
     // run the engine
     engine.update_loop(move |renderer, window, objects, input, camera, signals|
@@ -163,7 +164,13 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
     let mut new_vertices = vec![];
     let mut new_indices = vec![];
     for i in (0..indices.len()).step_by(3){
-        let mut mesh_data =subdivide_ico_tri(subs, normalization_factor, &mut vec![
+        let mut tri_subs:i32;
+        if i==0 {
+            tri_subs = subs+1;
+        }else{
+            tri_subs = subs;
+        }
+        let mut mesh_data =subdivide_ico_tri(tri_subs, normalization_factor, &mut vec![
             vertices[indices[i] as usize],
             vertices[indices[i+1]  as usize],
             vertices[indices[i+2]  as usize],
