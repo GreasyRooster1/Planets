@@ -16,6 +16,16 @@ impl Position{
     }
 }
 
+impl Clone for Position{
+    fn clone(&self) -> Self {
+        Position{
+            x:self.x.clone(),
+            y:self.y.clone(),
+            z:self.z.clone(),
+        }
+    }
+}
+
 pub struct MeshData{
     pub vertices:Vec<Vertex>,
     pub indices:Vec<u16>,
