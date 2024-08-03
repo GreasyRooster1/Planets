@@ -73,7 +73,7 @@ fn main() {
             |ctx| {
                 gui::Window::new("Mesh").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
-                    ui.add(Slider::new(&mut subs, 0..=4).text("subs"));
+                    ui.add(Slider::new(&mut subs, 0..=8).text("subs"));
                     ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("norm"));
                 });
 
@@ -167,7 +167,7 @@ fn get_ico_mesh(max_subs:i32, normalization_factor: f64, camera: &mut CameraCont
         let mut new_indices = vec![];
         for i in (0..indices.len()).step_by(3) {
             let dist_from_cam = get_tri_dist_from_cam(vertices[indices[i] as usize], vertices[indices[i + 1] as usize], vertices[indices[i + 2] as usize], camera, 100f32);
-            let mut tri_subs: i32 = if dist_from_cam< (200 - j * 10) as f32 {1} else {0};
+            let mut tri_subs: i32 = if dist_from_cam< (200 - (j * 30)) as f32 {1} else {0};
 
             let mut mesh_data = subdivide_ico_tri(tri_subs, normalization_factor, &mut vec![
                 vertices[indices[i] as usize],
@@ -182,7 +182,7 @@ fn get_ico_mesh(max_subs:i32, normalization_factor: f64, camera: &mut CameraCont
             for vertex in mesh_data.vertices {
                 new_vertices.push(Vertex {
                     position: vertex.position,
-                    uv: [(tri_subs as f32 + 0.5) / 16., 0.5],
+                    uv: [((vertex.uv[0]*16.-0.5)+tri_subs as f32 + 0.5) / 16., 0.5],
                     normal: vertex.normal,
                 })
             }
