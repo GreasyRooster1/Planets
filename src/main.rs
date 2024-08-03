@@ -171,13 +171,10 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
             (new_vertices.len() + 0) as u16,
             (new_vertices.len() + 1) as u16,
             (new_vertices.len() + 2) as u16,
-        ]);
+        ],new_vertices.len());
 
         new_vertices.append(&mut mesh_data.vertices);
-
-        for index in mesh_data.indices{
-            new_indices.push(index+new_vertices.len() as u16);
-        }
+        new_indices.append(&mut mesh_data.indices);
     }
 
     vertices = new_vertices.clone();
@@ -189,7 +186,7 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
     }
 }
 
-fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i: &mut Vec<u16>) ->MeshData{
+fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i: &mut Vec<u16>, vertex_amt: usize) ->MeshData{
     let mut vertices = v.clone();
     let mut indices = i.clone();
     for i in 0..subs{
@@ -219,9 +216,20 @@ fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i:
         vertices = new_vertices.clone();
         indices = new_indices.clone();
     }
+
+
+    let mut adjusted_indices = vec![];
+    if subs>0 {
+        for index in indices {
+            adjusted_indices.push(index + vertex_amt as u16);
+        }
+    }else{
+        adjusted_indices = indices;
+    }
+
     MeshData{
         vertices,
-        indices,
+        indices:adjusted_indices,
     }
 }
 
