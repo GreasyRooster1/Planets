@@ -2,7 +2,7 @@ mod lib;
 mod input;
 
 use std::time::SystemTime;
-use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
+use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, TextureData, Textures, Vertex, wgpu};
 use blue_engine::glm::{lerp, lerp_scalar};
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
@@ -15,6 +15,12 @@ fn main() {
     // initialize the engine
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
+    let chunking_cols_tex = engine.renderer.build_texture(
+        "background",
+              TextureData::Path("resources/chunking_colors.png".to_string()),
+              blue_engine::TextureMode::Repeat
+    ).unwrap();
+
     engine.camera.set_far(1000f32).unwrap();
 
     // create a triangle
@@ -26,7 +32,9 @@ fn main() {
        },
        ..Default::default()
     });
-    engine.objects.get_mut("ico").unwrap().set_scale(100f32,100f32,100f32);
+    let mut ico_sphere = engine.objects.get_mut("ico").unwrap();
+    ico_sphere.set_scale(100f32,100f32,100f32);
+    ico_sphere.set_texture(chunking_cols_tex).unwrap();
 
     // Start the egui context
     let gui_context = egui::EGUI::new(&mut engine.renderer, &engine.window);
@@ -70,7 +78,7 @@ fn main() {
 
                 gui::Window::new("Stats").show(ctx, |ui| {
                     ui.label(format!("FPS: {0}",fps));
-                    ui.label(format!("∆t: {0}",elapsed_frame_time));
+                    ui.label(format!("∆t ms: {0}",elapsed_frame_time));
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -89,17 +97,17 @@ fn main() {
         );
 
         if is_key_pressed(38)&&radius> 1.1 {
-            radius -= 1. * delta_time;
+            radius -= 0.5 * delta_time;
         }
         if is_key_pressed(40){
-            radius += 1. * delta_time;
+            radius += 0.5 * delta_time;
         }
 
         if is_key_pressed(39){
-            angle += 0.01 * delta_time;
+            angle += 0.005 * delta_time;
         }
         if is_key_pressed(37){
-            angle -= 0.01 * delta_time;
+            angle -= 0.005 * delta_time;
         }
         let camx = angle.sin() * radius;
         let camz = angle.cos() * radius;
@@ -139,7 +147,7 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
         vertices.append(&mut vec![
             Vertex {
                 position: [pos.x,pos.y,pos.z],
-                uv: [0., 0.],
+                uv: [subs as f32/32., 0.5],
                 normal: [0., 1., 0.],
             }
         ]);
