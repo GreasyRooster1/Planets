@@ -45,7 +45,6 @@ fn main() {
     let mut radius = 300f32;
     let mut angle = 0f32;
 
-    let timer = SystemTime::now();
     let mut frame_timer = SystemTime::now();
     let mut fps = 0;
     let mut elapsed_frame_time = 0;
