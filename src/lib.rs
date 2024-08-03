@@ -30,3 +30,9 @@ pub struct MeshData{
     pub vertices:Vec<Vertex>,
     pub indices:Vec<u16>,
 }
+
+pub struct Tri{
+    pub v1:Vertex,
+    pub v2:Vertex,
+    pub v3:Vertex,
+}
