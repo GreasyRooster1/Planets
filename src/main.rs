@@ -3,7 +3,7 @@ mod input;
 
 use std::time::SystemTime;
 use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, Vertex, wgpu};
-
+use blue_engine::glm::{lerp, lerp_scalar};
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
 use blue_engine_utilities::egui::egui::Slider;
@@ -16,7 +16,7 @@ fn main() {
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
     // create a triangle
-    ico_sphere("ico",1, &mut engine.renderer, &mut engine.objects,
+    ico_sphere("ico",2, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
        shader_settings: ShaderSettings {
            polygon_mode: wgpu::PolygonMode::Line,
@@ -36,6 +36,7 @@ fn main() {
         .expect("Couldn't update the camera eye");
 
     let mut wireframe = false;
+    let mut normalization_factor = 0.;
     let mut subs = 0;
 
     let mut radius = 2f32;
@@ -60,7 +61,8 @@ fn main() {
             |ctx| {
                 gui::Window::new("Planets").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
-                    ui.add(Slider::new(&mut subs, 0..=4).text("subs"))
+                    ui.add(Slider::new(&mut subs, 0..=4).text("subs"));
+                    ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("norm"));
                 });
 
                 gui::Window::new("Stats").show(ctx, |ui| {
@@ -74,7 +76,7 @@ fn main() {
                     ..Default::default()
                 };
 
-                let new_mesh = get_ico_mesh(subs);
+                let new_mesh = get_ico_mesh(subs,normalization_factor);
                 ico.vertices = new_mesh.vertices;
                 ico.indices = new_mesh.indices;
                 ico.update(renderer).unwrap()
@@ -108,7 +110,7 @@ fn main() {
 }
 
 fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings){
-    let mesh = get_ico_mesh(subs);
+    let mesh = get_ico_mesh(subs, 1.);
     objects.new_object(
         name.clone(),
         mesh.vertices,
@@ -118,7 +120,7 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
     ).unwrap();
 }
 
-fn get_ico_mesh(subs:i32)->MeshData{
+fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
     let t = (1.0 + f32::sqrt(5.0))/2.;
     let mut vertices: Vec<Vertex> = vec![];
     let raw_vertices:Vec<[f32;3]>=vec![
@@ -152,9 +154,9 @@ fn get_ico_mesh(subs:i32)->MeshData{
             let tri_v2 = vertices[indices[j+1]as usize];
             let tri_v3 = vertices[indices[j+2]as usize];
 
-            let mid_v1 = get_middle_point(tri_v1, tri_v2);
-            let mid_v2 = get_middle_point(tri_v2, tri_v3);
-            let mid_v3 = get_middle_point(tri_v3, tri_v1);
+            let mid_v1 = get_middle_point(tri_v1, tri_v2, normalization_factor);
+            let mid_v2 = get_middle_point(tri_v2, tri_v3, normalization_factor);
+            let mid_v3 = get_middle_point(tri_v3, tri_v1, normalization_factor);
 
             add_tri(tri_v1, mid_v1, mid_v3, &mut new_vertices, &mut new_indices);
             add_tri(tri_v2, mid_v2, mid_v1, &mut new_vertices, &mut new_indices);
@@ -181,19 +183,25 @@ fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices:
     indices.append(&mut vec![(vertices.len()-1) as u16]);
 }
 
-fn get_middle_point(v1:Vertex,v2:Vertex)->Vertex{
+fn get_middle_point(v1:Vertex, v2:Vertex, normalization_factor: f64) ->Vertex{
     let pos_v1:Position = Position::xyz(v1.position[0],v1.position[1],v1.position[2]);
     let pos_v2:Position = Position::xyz(v2.position[0],v2.position[1],v2.position[2]);
 
     let pos_avg:Position = Position::xyz((pos_v1.x+pos_v2.x)/2.,(pos_v1.y+pos_v2.y)/2.,(pos_v1.z+pos_v2.z)/2.);
 
-    let pos_normal = normalize_position(pos_avg);
+    let pos_normal = normalize_position(pos_avg.clone());
+
+    let pos_final = Position::xyz(
+        lerp_scalar(pos_avg.x, pos_normal.x, normalization_factor as f32),
+        lerp_scalar(pos_avg.y, pos_normal.y, normalization_factor as f32),
+        lerp_scalar(pos_avg.z, pos_normal.z, normalization_factor as f32)
+    );
 
     Vertex{
         position: [
-            pos_normal.x,
-            pos_normal.y,
-            pos_normal.z,
+            pos_final.x,
+            pos_final.y,
+            pos_final.z,
         ],
         uv: [
             (v1.uv[0]+v2.uv[0])/2.,
