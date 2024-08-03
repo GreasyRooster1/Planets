@@ -183,7 +183,7 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
         for vertex in mesh_data.vertices{
             new_vertices.push(Vertex{
                 position: vertex.position,
-                uv: [tri_subs as f32/16., 0.5],
+                uv: [(tri_subs as f32+0.5)/16., 0.5],
                 normal:vertex.normal,
             })
         }
