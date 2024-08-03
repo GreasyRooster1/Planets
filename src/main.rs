@@ -3,7 +3,7 @@ mod input;
 
 use std::time::SystemTime;
 use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, TextureData, Textures, Vertex, wgpu};
-use blue_engine::glm::{lerp, lerp_scalar};
+use blue_engine::glm::{lerp, lerp_scalar, round};
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
 use blue_engine_utilities::egui::egui::Slider;
@@ -31,7 +31,7 @@ fn main() {
            ..Default::default()
        },
        ..Default::default()
-    });
+    },&mut engine.camera);
     let mut ico_sphere = engine.objects.get_mut("ico").unwrap();
     ico_sphere.set_scale(100f32,100f32,100f32);
     ico_sphere.set_texture(chunking_cols_tex).unwrap();
@@ -90,7 +90,7 @@ fn main() {
                     ..Default::default()
                 };
 
-                let new_mesh = get_ico_mesh(subs,normalization_factor);
+                let new_mesh = get_ico_mesh(subs,normalization_factor,camera);
                 ico.vertices = new_mesh.vertices;
                 ico.indices = new_mesh.indices;
                 ico.update(renderer).unwrap()
@@ -124,8 +124,8 @@ fn main() {
     .expect("Error during update loop");
 }
 
-fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings){
-    let mesh = get_ico_mesh(subs, 1.);
+fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings,camera: &mut CameraContainer){
+    let mesh = get_ico_mesh(subs, 1.,camera);
     objects.new_object(
         name.clone(),
         mesh.vertices,
@@ -135,7 +135,7 @@ fn ico_sphere(name: impl StringBuffer, subs:i32, renderer: &mut Renderer, object
     ).unwrap();
 }
 
-fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
+fn get_ico_mesh(subs:i32, normalization_factor: f64,camera: &mut CameraContainer) ->MeshData{
     let t = (1.0 + f32::sqrt(5.0))/2.;
     let mut vertices: Vec<Vertex> = vec![];
     let raw_vertices:Vec<[f32;3]>=vec![
@@ -164,12 +164,9 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
     let mut new_vertices = vec![];
     let mut new_indices = vec![];
     for i in (0..indices.len()).step_by(3){
-        let mut tri_subs:i32;
-        if i==0 {
-            tri_subs = subs+1;
-        }else{
-            tri_subs = subs;
-        }
+        let dist_from_cam = get_tri_dist_from_cam(vertices[indices[i] as usize],vertices[indices[i+1] as usize],vertices[indices[i+2] as usize],camera);
+        let mut tri_subs:i32=4-chunk_value(dist_from_cam,150.,200.,4);
+
         let mut mesh_data =subdivide_ico_tri(tri_subs, normalization_factor, &mut vec![
             vertices[indices[i] as usize],
             vertices[indices[i+1]  as usize],
@@ -294,4 +291,22 @@ fn normalize_position(position: Position)->Position{
     let len = f32::sqrt(position.x.powi(2)+position.y.powi(2)+position.z.powi(2));
 
     Position::xyz(position.x/len,position.y/len,position.z/len)
+}
+
+fn chunk_value(value:f32,val_min:f32,val_max:f32,chunks:i32)-> i32{
+    let clamped_val = f32::max(f32::min(value,val_max),val_min);
+    let scaled_val = (clamped_val-val_min)/(val_max-val_min);
+    println!("{0}",value);
+    (scaled_val*chunks as f32).round() as i32
+}
+
+fn get_tri_dist_from_cam(v1:Vertex, v2:Vertex, v3:Vertex, camera_container: &mut CameraContainer) ->f32{
+    let pos = camera_container.cameras
+        .get("main")
+        .unwrap()
+        .position;
+    let avg_x = (v1.position[0]+v2.position[0]+v3.position[0])/3.0;
+    let avg_y = (v1.position[1]+v2.position[1]+v3.position[1])/3.0;
+    let avg_z = (v1.position[2]+v2.position[2]+v3.position[2])/3.0;
+    f32::sqrt((pos.x-avg_x).powi(2)+(pos.y-avg_y).powi(2)+(pos.z-avg_z).powi(2))
 }

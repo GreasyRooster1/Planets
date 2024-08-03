@@ -1,4 +1,4 @@
-use blue_engine::Vertex;
+use blue_engine::{CameraContainer, Vertex};
 
 pub struct Position{
     pub x:f32,
