@@ -79,6 +79,7 @@ fn main() {
                 gui::Window::new("Stats").show(ctx, |ui| {
                     ui.label(format!("FPS: {0}",fps));
                     ui.label(format!("∆t ms: {0}",elapsed_frame_time));
+                    ui.label(format!("vertices: {0}",objects.get_mut("ico").unwrap().vertices.len()));
                 });
 
                 let ico = objects.get_mut("ico").unwrap();
@@ -167,9 +168,9 @@ fn get_ico_mesh(subs:i32, normalization_factor: f64) ->MeshData{
             vertices[indices[i+1]  as usize],
             vertices[indices[i+2]  as usize],
         ], &mut vec![
-            indices[i],
-            indices[i+1],
-            indices[i+2],
+            (new_vertices.len() + 0) as u16,
+            (new_vertices.len() + 1) as u16,
+            (new_vertices.len() + 2) as u16,
         ],new_vertices.len());
 
         new_vertices.append(&mut mesh_data.vertices);
@@ -192,18 +193,20 @@ fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i:
         let mut new_vertices = vec![];
         let mut new_indices = vec![];
 
-        let tri_v1 = vertices[0];
-        let tri_v2 = vertices[1];
-        let tri_v3 = vertices[2];
+        for j in (0..indices.len()).step_by(3){
+            let tri_v1 = vertices[j];
+            let tri_v2 = vertices[j+1];
+            let tri_v3 = vertices[j+2];
 
-        let mid_v1 = get_middle_point(tri_v1, tri_v2, normalization_factor);
-        let mid_v2 = get_middle_point(tri_v2, tri_v3, normalization_factor);
-        let mid_v3 = get_middle_point(tri_v3, tri_v1, normalization_factor);
+            let mid_v1 = get_middle_point(tri_v1, tri_v2, normalization_factor);
+            let mid_v2 = get_middle_point(tri_v2, tri_v3, normalization_factor);
+            let mid_v3 = get_middle_point(tri_v3, tri_v1, normalization_factor);
 
-        add_tri_with_indices_count(tri_v1, mid_v1, mid_v3, &mut new_vertices, &mut new_indices, vertex_count);
-        add_tri_with_indices_count(tri_v2, mid_v2, mid_v1, &mut new_vertices, &mut new_indices, vertex_count);
-        add_tri_with_indices_count(tri_v3, mid_v3, mid_v2, &mut new_vertices, &mut new_indices, vertex_count);
-        add_tri_with_indices_count(mid_v1, mid_v2, mid_v3, &mut new_vertices, &mut new_indices, vertex_count);
+            add_tri(tri_v1, mid_v1, mid_v3, &mut new_vertices, &mut new_indices);
+            add_tri(tri_v2, mid_v2, mid_v1, &mut new_vertices, &mut new_indices);
+            add_tri(tri_v3, mid_v3, mid_v2, &mut new_vertices, &mut new_indices);
+            add_tri(mid_v1, mid_v2, mid_v3, &mut new_vertices, &mut new_indices);
+        }
 
         vertices = new_vertices.clone();
         indices = new_indices.clone();
@@ -212,17 +215,6 @@ fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i:
         vertices,
         indices,
     }
-}
-
-fn add_tri_with_indices_count(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices: &mut Vec<u16>, vertex_count:usize){
-    vertices.append(&mut vec![v1]);
-    vertices.append(&mut vec![v2]);
-    vertices.append(&mut vec![v3]);
-    vertices.append(&mut vec![v1]);
-
-    indices.append(&mut vec![(vertex_count+vertices.len() - 3) as u16]);
-    indices.append(&mut vec![(vertex_count+vertices.len() - 2) as u16]);
-    indices.append(&mut vec![(vertex_count+vertices.len() -1) as u16]);
 }
 
 fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices: &mut Vec<u16>){
