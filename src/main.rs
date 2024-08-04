@@ -1,3 +1,5 @@
+#![feature(isqrt)]
+
 mod lib;
 mod input;
 
@@ -75,7 +77,7 @@ fn main() {
             |ctx| {
                 gui::Window::new("Mesh").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
-                    ui.add(Slider::new(&mut max_subs, 0..=8).text("max_subs"));
+                    ui.add(Slider::new(&mut max_subs, 0..=16).text("max_subs"));
                     ui.add(Slider::new(&mut initial_subs, 0..=4).text("initial_subs"));
                     ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("normalization_factor"));
                 });
@@ -102,10 +104,17 @@ fn main() {
         );
 
         if is_key_pressed(38)&&radius> 1.1 {
-            radius -= 0.1 * delta_time;
+            radius -= 0.05 * delta_time;
         }
         if is_key_pressed(40){
-            radius += 0.1 * delta_time;
+            radius += 0.05 * delta_time;
+        }
+
+        if is_key_pressed(87)&&radius> 100f32 {
+            radius -= 0.01 * delta_time;
+        }
+        if is_key_pressed(83){
+            radius += 0.01 * delta_time;
         }
 
         if is_key_pressed(68){
@@ -166,7 +175,7 @@ fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camer
         vertices.append(&mut vec![
             Vertex {
                 position: [pos.x,pos.y,pos.z],
-                uv: [max_subs as f32/32., 0.5],
+                uv: [0., 0.5],
                 normal: [0., 1., 0.],
             }
         ]);
@@ -184,7 +193,7 @@ fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camer
         let mut new_indices = vec![];
         for i in (0..indices.len()).step_by(3) {
             let dist_from_cam = get_tri_dist_from_cam(vertices[indices[i] as usize], vertices[indices[i + 1] as usize], vertices[indices[i + 2] as usize], camera, 100f32);
-            let mut tri_subs: i32 = if dist_from_cam< (200 - (j * 35))as f32  || j< initial_subs {1} else {0};
+            let mut tri_subs: i32 = if dist_from_cam< get_lod_level_dist(j)  || j< initial_subs {1} else {0};
 
             let mut mesh_data = subdivide_ico_tri(tri_subs, normalization_factor, &mut vec![
                 vertices[indices[i] as usize],
@@ -213,6 +222,11 @@ fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camer
         vertices,
         indices,
     }
+}
+
+fn get_lod_level_dist(level: i32) -> f32 {
+    let f_level = level as f32;
+    return 150./f_level*1.1;
 }
 
 fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i: &mut Vec<u16>, vertex_amt: usize) ->MeshData{
