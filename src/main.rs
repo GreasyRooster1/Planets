@@ -117,6 +117,13 @@ fn main() {
             radius += 0.01 * delta_time;
         }
 
+        if is_key_pressed(90)&&radius> 100f32 {
+            radius -= 0.001 * delta_time;
+        }
+        if is_key_pressed(88){
+            radius += 0.001 * delta_time;
+        }
+
         if is_key_pressed(68){
             angle += 0.002 * delta_time;
         }
@@ -226,7 +233,7 @@ fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camer
 
 fn get_lod_level_dist(level: i32) -> f32 {
     let f_level = level as f32;
-    return 150./f_level*1.1;
+    return 120./f_level.powf(f_level/3.5);
 }
 
 fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i: &mut Vec<u16>, vertex_amt: usize) ->MeshData{
