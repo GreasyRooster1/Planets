@@ -17,7 +17,7 @@ fn main() {
 
     let chunking_cols_tex = engine.renderer.build_texture(
         "background",
-              TextureData::Path("resources/chunking_colors.png".to_string()),
+              TextureData::Path("resources/chunking_lighting_colors.png".to_string()),
               blue_engine::TextureMode::Repeat
     ).unwrap();
 
@@ -48,7 +48,8 @@ fn main() {
 
     let mut wireframe = false;
     let mut normalization_factor = 0.;
-    let mut subs = 0;
+    let mut max_subs = 0;
+    let mut initial_subs = 0;
 
     let mut radius = 300f32;
     let mut angle = 0f32;
@@ -73,8 +74,9 @@ fn main() {
             |ctx| {
                 gui::Window::new("Mesh").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"Wireframe");
-                    ui.add(Slider::new(&mut subs, 0..=8).text("subs"));
-                    ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("norm"));
+                    ui.add(Slider::new(&mut max_subs, 0..=8).text("max_subs"));
+                    ui.add(Slider::new(&mut initial_subs, 0..=4).text("initial_subs"));
+                    ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("normalization_factor"));
                 });
 
                 gui::Window::new("Stats").show(ctx, |ui| {
@@ -90,7 +92,7 @@ fn main() {
                     ..Default::default()
                 };
 
-                let new_mesh = get_ico_mesh(subs,normalization_factor,camera);
+                let new_mesh = get_ico_mesh(initial_subs,max_subs, normalization_factor, camera);
                 ico.vertices = new_mesh.vertices;
                 ico.indices = new_mesh.indices;
                 ico.update(renderer).unwrap()
@@ -124,8 +126,8 @@ fn main() {
     .expect("Error during update loop");
 }
 
-fn ico_sphere(name: impl StringBuffer, max_subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings,camera: &mut CameraContainer){
-    let mesh = get_ico_mesh(max_subs, 1.,camera);
+fn ico_sphere(name: impl StringBuffer, initial_subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings,camera: &mut CameraContainer){
+    let mesh = get_ico_mesh(initial_subs,8, 1.,camera);
     objects.new_object(
         name.clone(),
         mesh.vertices,
@@ -135,7 +137,7 @@ fn ico_sphere(name: impl StringBuffer, max_subs:i32, renderer: &mut Renderer, ob
     ).unwrap();
 }
 
-fn get_ico_mesh(max_subs:i32, normalization_factor: f64, camera: &mut CameraContainer) ->MeshData{
+fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camera: &mut CameraContainer) ->MeshData{
     let t = (1.0 + f32::sqrt(5.0))/2.;
     let mut vertices: Vec<Vertex> = vec![];
     let raw_vertices:Vec<[f32;3]>=vec![
@@ -167,7 +169,7 @@ fn get_ico_mesh(max_subs:i32, normalization_factor: f64, camera: &mut CameraCont
         let mut new_indices = vec![];
         for i in (0..indices.len()).step_by(3) {
             let dist_from_cam = get_tri_dist_from_cam(vertices[indices[i] as usize], vertices[indices[i + 1] as usize], vertices[indices[i + 2] as usize], camera, 100f32);
-            let mut tri_subs: i32 = if dist_from_cam< (200 - (j * 30)) as f32 {1} else {0};
+            let mut tri_subs: i32 = if dist_from_cam< (200 - (j * 35))as f32  || j< initial_subs {1} else {0};
 
             let mut mesh_data = subdivide_ico_tri(tri_subs, normalization_factor, &mut vec![
                 vertices[indices[i] as usize],
@@ -182,7 +184,7 @@ fn get_ico_mesh(max_subs:i32, normalization_factor: f64, camera: &mut CameraCont
             for vertex in mesh_data.vertices {
                 new_vertices.push(Vertex {
                     position: vertex.position,
-                    uv: [((vertex.uv[0]*16.-0.5)+tri_subs as f32 + 0.5) / 16., 0.5],
+                    uv: [((vertex.uv[0]*16.-0.5)+tri_subs as f32 + 0.5) / 16., dist_from_cam/400.],
                     normal: vertex.normal,
                 })
             }
