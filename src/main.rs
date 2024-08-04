@@ -53,6 +53,7 @@ fn main() {
 
     let mut radius = 300f32;
     let mut angle = 0f32;
+    let mut x_target = 0f32;
 
     let mut frame_timer = SystemTime::now();
     let mut fps = 0;
@@ -101,23 +102,37 @@ fn main() {
         );
 
         if is_key_pressed(38)&&radius> 1.1 {
-            radius -= 0.25 * delta_time;
+            radius -= 0.1 * delta_time;
         }
         if is_key_pressed(40){
-            radius += 0.25 * delta_time;
+            radius += 0.1 * delta_time;
+        }
+
+        if is_key_pressed(65){
+            angle += 0.002 * delta_time;
+        }
+        if is_key_pressed(68){
+            angle -= 0.002 * delta_time;
         }
 
         if is_key_pressed(39){
-            angle += 0.005 * delta_time;
+            x_target += 0.5 * delta_time;
         }
         if is_key_pressed(37){
-            angle -= 0.005 * delta_time;
+            x_target -= 0.5 * delta_time;
+        }
+
+        if is_key_pressed(32){
+            x_target = 0.;
+            angle = 0.;
+            radius = 300.;
         }
         let camx = angle.sin() * radius;
         let camz = angle.cos() * radius;
         camera
             .set_position(camx, 0.0, camz)
             .expect("Couldn't update the camera eye");
+        camera.set_target(x_target,0.,0.).unwrap();
 
         elapsed_frame_time = frame_timer.elapsed().unwrap().as_millis();
         fps = (1_000/elapsed_frame_time);
