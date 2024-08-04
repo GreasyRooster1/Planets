@@ -108,10 +108,10 @@ fn main() {
             radius += 0.1 * delta_time;
         }
 
-        if is_key_pressed(65){
+        if is_key_pressed(68){
             angle += 0.002 * delta_time;
         }
-        if is_key_pressed(68){
+        if is_key_pressed(65){
             angle -= 0.002 * delta_time;
         }
 
