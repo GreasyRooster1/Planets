@@ -1,4 +1,4 @@
-#![feature(isqrt)]
+
 
 mod lib;
 mod input;
