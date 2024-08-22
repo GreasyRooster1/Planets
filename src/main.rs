@@ -48,6 +48,9 @@ fn main() {
         .set_target(0.,0.,0.)
         .expect("Couldn't update the camera eye");
 
+    let mut use_color = true;
+    let mut lighting_factor = 400.;
+
     let mut wireframe = false;
     let mut normalization_factor = 0.;
     let mut max_subs = 0;
@@ -75,8 +78,13 @@ fn main() {
             .expect("Plugin type mismatch");
         egui_plugin.ui(
             |ctx| {
+                gui::Window::new("Rendering").show(ctx, |ui| {
+                    ui.checkbox(&mut wireframe,"wireframe");
+                    ui.checkbox(&mut use_color,"use_color");
+                    ui.add(Slider::new(&mut lighting_factor, 0..=800.).text("lighting_factor"));
+                });
+
                 gui::Window::new("Mesh").show(ctx, |ui| {
-                    ui.checkbox(&mut wireframe,"Wireframe");
                     ui.add(Slider::new(&mut max_subs, 0..=16).text("max_subs"));
                     ui.add(Slider::new(&mut initial_subs, 0..=4).text("initial_subs"));
                     ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("normalization_factor"));
@@ -87,6 +95,10 @@ fn main() {
                     ui.label(format!("∆t ms: {0}",elapsed_frame_time));
                     ui.label(format!("vertices: {0}",objects.get_mut("ico").unwrap().vertices.len()));
                 });
+
+                if use_color {
+
+                }
 
                 let ico = objects.get_mut("ico").unwrap();
 
