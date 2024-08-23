@@ -84,7 +84,6 @@ fn main() {
             |ctx| {
                 gui::Window::new("Rendering").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"wireframe");
-                    ui.checkbox(&mut use_color,"use_color");
                     ui.add(Slider::new(&mut lighting_factor, 0f32..=800f32).text("lighting_factor"));
                 });
 
@@ -100,11 +99,7 @@ fn main() {
                     ui.label(format!("vertices: {0}",objects.get_mut("ico").unwrap().vertices.len()));
                 });
 
-                let ico = objects.get_mut("ico").unwrap();
-
-                if use_color {
-                    ico.set_color(1.,1.,1.,1.).unwrap();
-                }
+                let mut ico = objects.get_mut("ico").unwrap();
 
                 ico.shader_settings = ShaderSettings{
                     polygon_mode: if wireframe {wgpu::PolygonMode::Line}else{wgpu::PolygonMode::Fill},
