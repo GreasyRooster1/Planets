@@ -1,5 +1,3 @@
-
-
 mod lib;
 mod input;
 
@@ -17,10 +15,16 @@ fn main() {
     // initialize the engine
     let mut engine = Engine::new().expect("engine couldn't be initialized");
 
-    let chunking_cols_tex = engine.renderer.build_texture(
+    let chunk_light_tex = engine.renderer.build_texture(
         "background",
-              TextureData::Path("resources/chunking_lighting_colors.png".to_string()),
-              blue_engine::TextureMode::Repeat
+        TextureData::Path("resources/chunking_lighting_colors.png".to_string()),
+        blue_engine::TextureMode::Repeat
+    ).unwrap();
+
+    let light_tex = engine.renderer.build_texture(
+        "background",
+        TextureData::Path("resources/lighting_colors.png".to_string()),
+        blue_engine::TextureMode::Repeat
     ).unwrap();
 
     engine.camera.set_far(1000f32).unwrap();
@@ -36,7 +40,7 @@ fn main() {
     },&mut engine.camera);
     let mut ico_sphere = engine.objects.get_mut("ico").unwrap();
     ico_sphere.set_scale(100f32,100f32,100f32);
-    ico_sphere.set_texture(chunking_cols_tex).unwrap();
+    ico_sphere.set_texture(chunk_light_tex).unwrap();
 
     // Start the egui context
     let gui_context = egui::EGUI::new(&mut engine.renderer, &engine.window);
@@ -81,7 +85,7 @@ fn main() {
                 gui::Window::new("Rendering").show(ctx, |ui| {
                     ui.checkbox(&mut wireframe,"wireframe");
                     ui.checkbox(&mut use_color,"use_color");
-                    ui.add(Slider::new(&mut lighting_factor, 0..=800.).text("lighting_factor"));
+                    ui.add(Slider::new(&mut lighting_factor, 0f32..=800f32).text("lighting_factor"));
                 });
 
                 gui::Window::new("Mesh").show(ctx, |ui| {
@@ -96,11 +100,11 @@ fn main() {
                     ui.label(format!("vertices: {0}",objects.get_mut("ico").unwrap().vertices.len()));
                 });
 
-                if use_color {
-
-                }
-
                 let ico = objects.get_mut("ico").unwrap();
+
+                if use_color {
+                    ico.set_color(1.,1.,1.,1.).unwrap();
+                }
 
                 ico.shader_settings = ShaderSettings{
                     polygon_mode: if wireframe {wgpu::PolygonMode::Line}else{wgpu::PolygonMode::Fill},

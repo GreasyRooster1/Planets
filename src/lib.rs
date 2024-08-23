@@ -5,6 +5,16 @@ pub struct Position{
     pub y:f32,
     pub z:f32,
 }
+pub struct MeshData{
+    pub vertices:Vec<Vertex>,
+    pub indices:Vec<u16>,
+}
+
+pub struct Tri{
+    pub v1:Vertex,
+    pub v2:Vertex,
+    pub v3:Vertex,
+}
 
 impl Position{
     pub(crate) fn xyz(x:f32, y:f32, z:f32) ->Position{
@@ -26,13 +36,4 @@ impl Clone for Position{
     }
 }
 
-pub struct MeshData{
-    pub vertices:Vec<Vertex>,
-    pub indices:Vec<u16>,
-}
 
-pub struct Tri{
-    pub v1:Vertex,
-    pub v2:Vertex,
-    pub v3:Vertex,
-}
