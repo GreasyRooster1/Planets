@@ -118,10 +118,10 @@ fn main() {
             window,
         );
         if input.key_held(KeyCode::ArrowUp)&&radius> 1.1 {
-            update_radius(&mut radius,-0.05 * delta_time)
+            update_radius(&mut radius,-0.05 * delta_time,&mut update_mesh)
         }
         if input.key_held(KeyCode::ArrowDown){
-            update_radius(&mut radius,0.05 * delta_time)
+            update_radius(&mut radius,0.05 * delta_time,&mut update_mesh)
         }
         if input.key_pressed(KeyCode::Space){
             x_target = 0.;
@@ -142,7 +142,8 @@ fn main() {
     .expect("Error during update loop");
 }
 
-fn update_radius(radius: &mut f32,delta:f32) {
+fn update_radius(radius: &mut f32,delta:f32,update_mesh:&mut bool) {
+    *update_mesh=true;
     *radius+=delta;
 }
 
