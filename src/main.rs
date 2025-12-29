@@ -9,6 +9,7 @@ use blue_engine_utilities::egui::egui as gui;
 use blue_engine_utilities::egui::egui::Slider;
 use lib::Position;
 use Planets::MeshData;
+use rand::Rng;
 
 fn main() {
     // initialize the engine
@@ -285,7 +286,9 @@ fn add_tri(v1:Vertex, v2:Vertex, v3:Vertex, vertices: &mut Vec<Vertex>, indices:
     indices.append(&mut vec![(vertices.len()-1) as u16]);
 }
 
-fn get_middle_point(v1:Vertex, v2:Vertex, normalization_factor: f64) ->Vertex{
+fn get_middle_point(v1:Vertex, v2:Vertex, norm_fac: f64) ->Vertex{
+    let mut rng = rand::thread_rng();
+    let normalization_factor = norm_fac+rng.gen_range(-0.1..0.1);
     let pos_v1:Position = Position::xyz(v1.position[0],v1.position[1],v1.position[2]);
     let pos_v2:Position = Position::xyz(v2.position[0],v2.position[1],v2.position[2]);
 
