@@ -1,4 +1,5 @@
 mod lib;
+use blue_engine::{Key, KeyCode};
 use std::time::SystemTime;
 use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, TextureData, Textures, Vertex, wgpu};
 use blue_engine::glm::{lerp, lerp_scalar, round};
@@ -8,7 +9,6 @@ use blue_engine_utilities::egui::egui as gui;
 use blue_engine_utilities::egui::egui::Slider;
 use lib::Position;
 use Planets::MeshData;
-use crate::input::is_key_pressed;
 
 fn main() {
     // initialize the engine
@@ -112,14 +112,13 @@ fn main() {
             },
             window,
         );
-
-        if input.is_key_down(Key::Named(NamedKey::ArrowUp))&&radius> 1.1 {
+        if input.key_held(KeyCode::ArrowUp)&&radius> 1.1 {
             radius -= 0.05 * delta_time;
         }
-        if input.is_key_down(Key::Named(NamedKey::ArrowDown)){
+        if input.key_held(KeyCode::ArrowDown){
             radius += 0.05 * delta_time;
         }
-        if input.is_key_down(Key::Named(NamedKey::Space)){
+        if input.key_held(KeyCode::Space){
             x_target = 0.;
             angle = 0.;
             radius = 300.;
