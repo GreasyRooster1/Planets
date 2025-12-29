@@ -59,7 +59,7 @@ fn main() {
     let mut max_subs = 0;
     let mut initial_subs = 0;
 
-    let mut radius = 300f32;
+    let mut radius = 100f32;
     let mut angle = 0f32;
     let mut x_target = 0f32;
 
@@ -89,7 +89,7 @@ fn main() {
                 });
 
                 gui::Window::new("Mesh").show(ctx, |ui| {
-                    ui.add(Slider::new(&mut max_subs, 0..=16).text("max_subs"));
+                    ui.add(Slider::new(&mut max_subs, 0..=20).text("max_subs"));
                     ui.add(Slider::new(&mut initial_subs, 0..=4).text("initial_subs"));
                     ui.add(Slider::new(&mut normalization_factor, 0.0..=1.0).text("normalization_factor"));
                 });
@@ -118,10 +118,10 @@ fn main() {
             window,
         );
         if input.key_held(KeyCode::ArrowUp)&&radius> 1.1 {
-            update_radius(&mut radius,-0.05 * delta_time,&mut update_mesh)
+            update_radius(&mut radius,-0.0005 * delta_time,&mut update_mesh)
         }
         if input.key_held(KeyCode::ArrowDown){
-            update_radius(&mut radius,0.05 * delta_time,&mut update_mesh)
+            update_radius(&mut radius,0.0005 * delta_time,&mut update_mesh)
         }
         if input.key_pressed(KeyCode::Space){
             x_target = 0.;
@@ -223,7 +223,8 @@ fn get_ico_mesh(initial_subs:i32, max_subs:i32, normalization_factor: f64, camer
 
 fn get_lod_level_dist(level: i32) -> f32 {
     let f_level = level as f32;
-    return 120./f_level.powf(f_level/3.5);
+    let a =5.0; //3.5
+    return 120./f_level.powf(f_level/a);
 }
 
 fn subdivide_ico_tri(subs:i32, normalization_factor:f64, v: &mut Vec<Vertex>, i: &mut Vec<u16>, vertex_amt: usize) ->MeshData{
