@@ -69,6 +69,8 @@ fn main() {
     let mut delta_time = 0.;
     let min_frame_time = 10;
 
+
+    let mut update_mesh = false;
     // run the engine
     engine.update_loop(move |renderer, window, objects, input, camera, signals|
     {
@@ -105,18 +107,21 @@ fn main() {
                     ..Default::default()
                 };
 
-                let new_mesh = get_ico_mesh(initial_subs,max_subs, normalization_factor, camera);
-                ico.vertices = new_mesh.vertices;
-                ico.indices = new_mesh.indices;
+                if(update_mesh) {
+                    let new_mesh = get_ico_mesh(initial_subs, max_subs, normalization_factor, camera);
+                    ico.vertices = new_mesh.vertices;
+                    ico.indices = new_mesh.indices;
+                    update_mesh=false;
+                }
                 ico.update(renderer).unwrap()
             },
             window,
         );
         if input.key_held(KeyCode::ArrowUp)&&radius> 1.1 {
-            radius -= 0.05 * delta_time;
+            update_radius(&mut radius,-0.05 * delta_time)
         }
         if input.key_held(KeyCode::ArrowDown){
-            radius += 0.05 * delta_time;
+            update_radius(&mut radius,0.05 * delta_time)
         }
         if input.key_held(KeyCode::Space){
             x_target = 0.;
@@ -135,6 +140,10 @@ fn main() {
         delta_time = elapsed_frame_time as f32
     })
     .expect("Error during update loop");
+}
+
+fn update_radius(radius: &mut f32,delta:f32) {
+    *radius+=delta;
 }
 
 fn ico_sphere(name: impl StringBuffer, initial_subs:i32, renderer: &mut Renderer, objects: &mut ObjectStorage, settings:ObjectSettings,camera: &mut CameraContainer){
