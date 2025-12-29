@@ -29,7 +29,7 @@ fn main() {
     engine.camera.set_far(1000f32).unwrap();
 
     // create a triangle
-    ico_sphere("ico",2, &mut engine.renderer, &mut engine.objects,
+    ico_sphere("ico",0, &mut engine.renderer, &mut engine.objects,
     ObjectSettings{
        shader_settings: ShaderSettings {
            polygon_mode: wgpu::PolygonMode::Line,
@@ -123,7 +123,7 @@ fn main() {
         if input.key_held(KeyCode::ArrowDown){
             update_radius(&mut radius,0.05 * delta_time)
         }
-        if input.key_held(KeyCode::Space){
+        if input.key_pressed(KeyCode::Space){
             x_target = 0.;
             angle = 0.;
             radius = 300.;
