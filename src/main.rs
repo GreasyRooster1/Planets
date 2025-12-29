@@ -1,9 +1,8 @@
 mod lib;
-mod input;
-
 use std::time::SystemTime;
 use blue_engine::{CameraContainer, header::{Engine, ObjectSettings}, ObjectStorage, primitive_shapes::triangle, Renderer, ShaderSettings, StringBuffer, TextureData, Textures, Vertex, wgpu};
 use blue_engine::glm::{lerp, lerp_scalar, round};
+use blue_engine::winit::keyboard::NamedKey;
 use blue_engine_utilities::egui;
 use blue_engine_utilities::egui::egui as gui;
 use blue_engine_utilities::egui::egui::Slider;
@@ -114,42 +113,13 @@ fn main() {
             window,
         );
 
-        if is_key_pressed(38)&&radius> 1.1 {
+        if input.is_key_down(Key::Named(NamedKey::ArrowUp))&&radius> 1.1 {
             radius -= 0.05 * delta_time;
         }
-        if is_key_pressed(40){
+        if input.is_key_down(Key::Named(NamedKey::ArrowDown)){
             radius += 0.05 * delta_time;
         }
-
-        if is_key_pressed(87)&&radius> 100f32 {
-            radius -= 0.01 * delta_time;
-        }
-        if is_key_pressed(83){
-            radius += 0.01 * delta_time;
-        }
-
-        if is_key_pressed(90)&&radius> 100f32 {
-            radius -= 0.001 * delta_time;
-        }
-        if is_key_pressed(88){
-            radius += 0.001 * delta_time;
-        }
-
-        if is_key_pressed(68){
-            angle += 0.002 * delta_time;
-        }
-        if is_key_pressed(65){
-            angle -= 0.002 * delta_time;
-        }
-
-        if is_key_pressed(39){
-            x_target += 0.5 * delta_time;
-        }
-        if is_key_pressed(37){
-            x_target -= 0.5 * delta_time;
-        }
-
-        if is_key_pressed(32){
+        if input.is_key_down(Key::Named(NamedKey::Space)){
             x_target = 0.;
             angle = 0.;
             radius = 300.;
